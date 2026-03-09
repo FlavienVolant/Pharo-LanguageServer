@@ -1,6 +1,6 @@
 Class {
 	#name : 'DAPInitializeRequestArguments',
-	#superclass : 'DAPJsonableObject',
+	#superclass : 'DAPRequestArguments',
 	#instVars : [
 		'clientID',
 		'clientName',

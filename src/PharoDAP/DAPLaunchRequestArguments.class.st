@@ -1,6 +1,6 @@
 Class {
 	#name : 'DAPLaunchRequestArguments',
-	#superclass : 'DAPJsonableObject',
+	#superclass : 'DAPRequestArguments',
 	#instVars : [
 		'noDebug',
 		'__restart'
