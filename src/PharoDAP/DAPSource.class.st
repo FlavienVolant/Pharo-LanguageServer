@@ -3,13 +3,30 @@ Class {
 	#superclass : 'DAPJsonableObject',
 	#instVars : [
 		'name',
+		'path',
 		'sourceReference',
-		'path'
+		'presentationHint',
+		'origin',
+		'sources',
+		'adapterData',
+		'checksums'
 	],
 	#category : 'PharoDAP-Types',
 	#package : 'PharoDAP',
 	#tag : 'Types'
 }
+
+{ #category : 'accessing' }
+DAPSource >> adapterData [
+
+	^ adapterData
+]
+
+{ #category : 'accessing' }
+DAPSource >> adapterData: anObject [
+
+	adapterData := anObject
+]
 
 { #category : 'accessing' }
 DAPSource >> asDAPJSON [
@@ -23,6 +40,18 @@ DAPSource >> asDAPJSON [
 ]
 
 { #category : 'accessing' }
+DAPSource >> checksums [
+
+	^ checksums
+]
+
+{ #category : 'accessing' }
+DAPSource >> checksums: aCollectionOfDAPChecksun [
+
+	checksums := aCollectionOfDAPChecksun
+]
+
+{ #category : 'accessing' }
 DAPSource >> name [
 	^ name
 ]
@@ -30,6 +59,18 @@ DAPSource >> name [
 { #category : 'accessing' }
 DAPSource >> name: anObject [
 	name := anObject
+]
+
+{ #category : 'accessing' }
+DAPSource >> origin [
+
+	^ origin
+]
+
+{ #category : 'accessing' }
+DAPSource >> origin: aString [
+
+	origin := aString
 ]
 
 { #category : 'accessing' }
@@ -45,6 +86,18 @@ DAPSource >> path: anObject [
 ]
 
 { #category : 'accessing' }
+DAPSource >> presentationHint [
+
+	^ presentationHint
+]
+
+{ #category : 'accessing' }
+DAPSource >> presentationHint: aString [
+
+	presentationHint := aString
+]
+
+{ #category : 'accessing' }
 DAPSource >> sourceReference [
 	^ sourceReference
 ]
@@ -52,4 +105,16 @@ DAPSource >> sourceReference [
 { #category : 'accessing' }
 DAPSource >> sourceReference: anObject [
 	sourceReference := anObject
+]
+
+{ #category : 'accessing' }
+DAPSource >> sources [
+
+	^ sources
+]
+
+{ #category : 'accessing' }
+DAPSource >> sources: aCollectionOfDAPSource [
+
+	sources := aCollectionOfDAPSource
 ]

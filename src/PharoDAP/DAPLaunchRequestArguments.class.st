@@ -20,6 +20,18 @@ DAPLaunchRequestArguments >> __restart: anObject [
 	__restart := anObject
 ]
 
+{ #category : 'converting' }
+DAPLaunchRequestArguments >> asDAPJSON [
+
+	| dict |
+	dict := super asDAPJSON.
+	
+	self __restart ifNotNil: [ dict at: #__restart put: self __restart asDAPJSON ].
+	self noDebug ifNotNil: [ dict at: #noDebug put: self noDebug ].
+
+	^ dict
+]
+
 { #category : 'accessing' }
 DAPLaunchRequestArguments >> noDebug [
 	^ noDebug

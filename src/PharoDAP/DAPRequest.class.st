@@ -22,6 +22,11 @@ DAPRequest class >> newFromJSON: aJSONObject [
 	^ deserializeMe
 ]
 
+{ #category : 'instance creation' }
+DAPRequest class >> withArguments:aRequestArguments [
+	^ self new arguments: aRequestArguments; yourself
+]
+
 { #category : 'accessing' }
 DAPRequest >> arguments [
 	^ arguments
@@ -30,6 +35,15 @@ DAPRequest >> arguments [
 { #category : 'accessing' }
 DAPRequest >> arguments: anObject [
 	arguments := anObject
+]
+
+{ #category : 'converting' }
+DAPRequest >> asDAPJSON [
+	| dic |
+	dic := super asDAPJSON.
+	self command ifNotNil: [ dic add: #command -> self command ].
+	self arguments ifNotNil: [ dic add: #arguments -> self arguments asDAPJSON ].
+	^ dic
 ]
 
 { #category : 'accessing' }
