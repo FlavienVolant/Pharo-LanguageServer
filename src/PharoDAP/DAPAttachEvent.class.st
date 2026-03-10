@@ -6,7 +6,7 @@ Class {
 	#tag : 'Structure'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'initialization' }
 DAPAttachEvent >> initialize [
 	super initialize.
 	event := 'initialized'
