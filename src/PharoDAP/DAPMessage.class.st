@@ -24,6 +24,18 @@ DAPMessage >> beConvertedBy: aDAPMessageProcessor [
 	^ aDAPMessageProcessor convertDAPJsonableObjectToJSON: self
 ]
 
+{ #category : 'printing' }
+DAPMessage >> printOn: aStream [
+
+	aStream
+		nextPutAll: self class name;
+		nextPutAll: ' #';
+		nextPutAll: seq asString;
+		nextPutAll: ' (';
+		nextPutAll: type;
+		nextPut: $)
+]
+
 { #category : 'accessing' }
 DAPMessage >> seq [
 	^ seq
