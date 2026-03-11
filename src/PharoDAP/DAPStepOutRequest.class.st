@@ -1,5 +1,5 @@
 Class {
-	#name : 'DAPStepInRequest',
+	#name : 'DAPStepOutRequest',
 	#superclass : 'DAPRequest',
 	#category : 'PharoDAP-Structure',
 	#package : 'PharoDAP',
@@ -7,8 +7,8 @@ Class {
 }
 
 { #category : 'initialization' }
-DAPStepInRequest >> initialize [
+DAPStepOutRequest >> initialize [
 
 	super initialize.
-	command := 'stepIn'
+	command := 'stepOut'
 ]
