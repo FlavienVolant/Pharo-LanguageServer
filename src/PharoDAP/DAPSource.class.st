@@ -30,12 +30,21 @@ DAPSource >> adapterData: anObject [
 
 { #category : 'accessing' }
 DAPSource >> asDAPJSON [
+
 	| json |
-	json:= super asDAPJSON
-		at: #name put: self name;
-		at: #sourceReference put: self sourceReference;
-		yourself.
-	self path ifNotNil:[ json at:#path put: self path ].
+	json := super asDAPJSON.
+
+	name ifNotNil: [ json at: #name put: name ].
+	path ifNotNil: [ json at: #path put: path ].
+	sourceReference ifNotNil: [
+		json at: #sourceReference put: sourceReference ].
+	presentationHint ifNotNil: [
+		json at: #presentationHint put: presentationHint ].
+	origin ifNotNil: [ json at: #origin put: origin ].
+	sources ifNotNil: [ json at: #sources put: sources asDAPJSON ].
+	adapterData ifNotNil: [
+		json at: #adapterData put: adapterData asDAPJSON ].
+	checksums ifNotNil: [ json at: #checksums put: checksums asDAPJSON ].
 	^ json
 ]
 
