@@ -14,7 +14,11 @@ Class {
 		'supportsRunInTerminalRequest',
 		'supportsMemoryReferences',
 		'supportsProgressReporting',
-		'supportsInvalidatedEvent'
+		'supportsInvalidatedEvent',
+		'supportsArgsCanBeInterpretedByShell',
+		'supportsMemoryEvent',
+		'supportsStartDebuggingRequest',
+		'supportsANSIStyling'
 	],
 	#category : 'PharoDAP-Structure',
 	#package : 'PharoDAP',
@@ -51,13 +55,10 @@ DAPInitializeRequestArguments >> asDAPJSON [
 	self supportsMemoryReferences ifNotNil: [ dict at: #supportsMemoryReferences put: self supportsMemoryReferences ].
 	self supportsProgressReporting ifNotNil: [ dict at: #supportsProgressReporting put: self supportsProgressReporting ].
 	self supportsInvalidatedEvent ifNotNil: [ dict at: #supportsInvalidatedEvent put: self supportsInvalidatedEvent ].
-	
-	"""
 	self supportsMemoryEvent ifNotNil: [ dict at: #supportsMemoryEvent put: self supportsMemoryEvent ].
 	self supportsArgsCanBeInterpretedByShell ifNotNil: [ dict at: #supportsArgsCanBeInterpretedByShell put: self supportsArgsCanBeInterpretedByShell ].
 	self supportsStartDebuggingRequest ifNotNil: [ dict at: #supportsStartDebuggingRequest put: self supportsStartDebuggingRequest ].
 	self supportsANSIStyling ifNotNil: [ dict at: #supportsANSIStyling put: self supportsANSIStyling ].
-	"""
 	
 	^ dict
 ]
@@ -135,6 +136,30 @@ DAPInitializeRequestArguments >> pathFormat: aString [
 ]
 
 { #category : 'accessing' }
+DAPInitializeRequestArguments >> supportsANSIStyling [
+
+	^ supportsANSIStyling
+]
+
+{ #category : 'accessing' }
+DAPInitializeRequestArguments >> supportsANSIStyling: anObject [
+
+	supportsANSIStyling := anObject
+]
+
+{ #category : 'accessing' }
+DAPInitializeRequestArguments >> supportsArgsCanBeInterpretedByShell [
+
+	^ supportsArgsCanBeInterpretedByShell
+]
+
+{ #category : 'accessing' }
+DAPInitializeRequestArguments >> supportsArgsCanBeInterpretedByShell: anObject [
+
+	supportsArgsCanBeInterpretedByShell := anObject
+]
+
+{ #category : 'accessing' }
 DAPInitializeRequestArguments >> supportsInvalidatedEvent [
 
 	^ supportsInvalidatedEvent
@@ -144,6 +169,18 @@ DAPInitializeRequestArguments >> supportsInvalidatedEvent [
 DAPInitializeRequestArguments >> supportsInvalidatedEvent: aBoolean [
 
 	supportsInvalidatedEvent := aBoolean
+]
+
+{ #category : 'accessing' }
+DAPInitializeRequestArguments >> supportsMemoryEvent [
+
+	^ supportsMemoryEvent
+]
+
+{ #category : 'accessing' }
+DAPInitializeRequestArguments >> supportsMemoryEvent: anObject [
+
+	supportsMemoryEvent := anObject
 ]
 
 { #category : 'accessing' }
@@ -180,6 +217,18 @@ DAPInitializeRequestArguments >> supportsRunInTerminalRequest [
 DAPInitializeRequestArguments >> supportsRunInTerminalRequest: aBoolean [
 
 	supportsRunInTerminalRequest := aBoolean
+]
+
+{ #category : 'accessing' }
+DAPInitializeRequestArguments >> supportsStartDebuggingRequest [
+
+	^ supportsStartDebuggingRequest
+]
+
+{ #category : 'accessing' }
+DAPInitializeRequestArguments >> supportsStartDebuggingRequest: anObject [
+
+	supportsStartDebuggingRequest := anObject
 ]
 
 { #category : 'accessing' }
