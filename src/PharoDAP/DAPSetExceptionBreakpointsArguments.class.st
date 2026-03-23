@@ -59,3 +59,9 @@ DAPSetExceptionBreakpointsArguments >> filters: aSetOfString [
 
 	filters := aSetOfString
 ]
+
+{ #category : 'initialization' }
+DAPSetExceptionBreakpointsArguments >> initialize [ 
+	super initialize.
+	command := 'setExceptionBreakpoints'
+]
