@@ -26,6 +26,13 @@ Class {
 }
 
 { #category : 'instance creation' }
+PLSDocument class >> extractUriFrom: aPseudoURIString [
+	"I extract additional element of URI for good usage"
+
+	^ aPseudoURIString copyUpTo: $?
+]
+
+{ #category : 'instance creation' }
 PLSDocument class >> from: aTextDocument [
 	"return a script document or a tonel document with the built from the textDocument dictionary"
 
@@ -55,16 +62,20 @@ PLSDocument class >> fromURI: aTextDocumentURI [
 	| clazz |
 	clazz := self allSubclasses
 		         detect: [ :subclass |
-		         subclass supportDocumentUri: aTextDocumentURI ]
+			         subclass supportDocumentUri:
+				         (self extractUriFrom: aTextDocumentURI) ]
 		         ifNone: [ self ].
 	^ clazz new
-		  uri: aTextDocumentURI;
+		  uri: (self extractUriFrom: aTextDocumentURI);
 		  yourself
 ]
 
 { #category : 'instance creation' }
 PLSDocument class >> isTonelDocument: textDocument [
-	^ ((textDocument at: #uri) endsWith: 'class.st') or: [ (textDocument at: #uri) endsWith: 'extension.st' ]
+
+	| uri |
+	uri := self extractUriFrom: (textDocument at: #uri).
+	^ (uri endsWith: 'class.st') or: [ uri endsWith: 'extension.st' ]
 ]
 
 { #category : 'instance creation' }

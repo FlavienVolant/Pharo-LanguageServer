@@ -80,7 +80,10 @@ PLSServerTest >> setUp [
 	super setUp.
 	server := PLSServer new.
 	server debugMode: true.
-	server clientOutStream: NullStream new
+	server clientOutStream: NullStream new.
+	server context clientContext: (PLPInitializeParams new
+			 capabilities: (PLPClientCapabilities from: {  } asDictionary );
+			 yourself)
 ]
 
 { #category : 'running' }
@@ -164,6 +167,38 @@ PLSServerTest >> testDidOpenMyTonelDocument [
 		assert:
 		(server context textItem: 'src/MyPackage/Benoit.class.st') class
 		equals: PLSTonelDocument
+]
+
+{ #category : 'tests' }
+PLSServerTest >> testDidSaveWithIceRepositoryURIInstallsTonelDocument [
+
+	| className source textDocument loadedClass |
+	className := #PLSIceRepositorySaveDocumentTest.
+	(Smalltalk globals at: className ifAbsent: [ nil ]) ifNotNil: [
+		:existing | existing removeFromSystem ].
+	source := '"I am a generated test class"
+Class {
+	#name : #PLSIceRepositorySaveDocumentTest,
+	#superclass : #Object,
+	#instVars : [ ],
+	#category : #''PharoLanguageServer-Tests''
+}
+
+{ #category : #testing }
+PLSIceRepositorySaveDocumentTest >> generatedSelector [
+	^ 42
+]'.
+	textDocument := {
+		                (#uri
+		                 ->
+		                 'pharoImage:/PharoLanguageServer-Tests/PLSIceRepositorySaveDocumentTest.class.st?iceRepository=my-repo').
+		                (#version -> 1) } asDictionary.
+	[
+		server didSave: textDocument text: source.
+		loadedClass := Smalltalk globals at: className.
+		self assert: loadedClass new generatedSelector equals: 42 ] ensure: [
+			(Smalltalk globals at: className ifAbsent: [ nil ]) ifNotNil: [
+				:existing | existing removeFromSystem ] ]
 ]
 
 { #category : 'tests' }

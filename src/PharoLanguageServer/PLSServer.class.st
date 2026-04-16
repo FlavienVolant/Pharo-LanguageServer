@@ -100,38 +100,30 @@ PLSServer >> didChange: textDocument contentChanges: contentChanges [
 	document := self context
 		            textItem: (textDocument at: #uri)
 		            ifAbsent: [
-			            self didOpen: textDocument.
-			            self context textItem: (textDocument at: #uri) ].
+				            self didOpen: textDocument.
+				            self context textItem: (textDocument at: #uri) ].
 	document version: (textDocument at: #version).
 	document text: (contentChanges anyOne at: #text).
 	"If diagnostic is not nil, we are in a pull diagnostic context. Else, we are in a push diagnostic context"
-	self context clientContext capabilities textDocument ifNotNil: [ :td |
-		td diagnostic ifNil: [
-			self
-				sendData: (self convertJRPCJsonableObjectToJSON:
-						 ((JRPCNotificationObject method:
-							   'textDocument/publishDiagnostics') params:
-							  document diagnostics) asJRPCJSON)
-				toClient: clientOutStream ] ]
+	self publishDiagnosticsFor: document
 ]
 
 { #category : 'lsp - text synchronisation' }
 PLSServer >> didClose: textDocument [
+
 	<jrpc: #'textDocument/didClose'>
 	| document |
 	document := self context removeItem: (textDocument at: #uri).
-	(self isTonelDocument: textDocument)
-		ifFalse: [ self
-				sendData:
-					(self
-						convertJRPCJsonableObjectToJSON:
-							((JRPCNotificationObject method: 'textDocument/publishDiagnostics')
-								params:
-									(PLSPublishDiagnosticsParams new
-										diagnostics: {};
-										uri: document uri;
-										version: document version;
-										yourself)) asJRPCJSON)
+	(PLSDocument isTonelDocument: textDocument) ifFalse: [
+			self
+				sendData: (self convertJRPCJsonableObjectToJSON:
+						 ((JRPCNotificationObject method:
+							   'textDocument/publishDiagnostics') params:
+							  (PLSPublishDiagnosticsParams new
+								   diagnostics: {  };
+								   uri: document uri;
+								   version: document version;
+								   yourself)) asJRPCJSON)
 				toClient: clientOutStream ]
 ]
 
@@ -144,29 +136,17 @@ PLSServer >> didOpen: textDocument [
 		            textItem: (textDocument at: #uri)
 		            put: (PLSDocument from: textDocument).
 	document server: self.
-	(self isTonelDocument: textDocument) ifFalse: [
-		| diagnostics |
-		diagnostics := ((PLSDiagnosticsParamsEngine document: document)
-			                requestor: document binder) computeDiagnostics.
-
-		self
-			sendData: (self convertJRPCJsonableObjectToJSON:
-					 ((JRPCNotificationObject method:
-						   'textDocument/publishDiagnostics') params:
-						  (PLSPublishDiagnosticsParams new
-							   diagnostics: diagnostics asArray;
-							   uri: document uri;
-							   version: document version;
-							   yourself) asJRPCJSON) asJRPCJSON)
-			toClient: clientOutStream ]
+	"If diagnostic is not nil, we are in a pull diagnostic context. Else, we are in a push diagnostic context"
+	self publishDiagnosticsFor: document
 ]
 
 { #category : 'lsp - text synchronisation' }
 PLSServer >> didSave: textDocument text: text [
-	<jrpc: #'textDocument/didSave'>
 	"Install the code in the image if the code is part of a tonel file"
-	((textDocument at: #uri) endsWith: 'class.st')
-		ifTrue: [ (PLSTonelParser parseString: text asByteArray utf8Decoded) do: #load ]
+
+	<jrpc: #'textDocument/didSave'>
+	(PLSDocument isTonelDocument: textDocument) ifTrue: [
+		(PLSTonelParser parseString: text asByteArray utf8Decoded) do: #load ]
 ]
 
 { #category : 'lsp - document symbol' }
@@ -197,35 +177,34 @@ PLSServer >> documentVariables: textDocument [
 
 { #category : 'lsp - formatting' }
 PLSServer >> formatTextDocument: textDocument withOptions: options [
+
 	<jrpc: #'textDocument/formatting'>
 	| codeSource formatter lines endPosition |
 	codeSource := (self context textItem: (textDocument at: #uri)) text.
 	lines := codeSource lines.
 	endPosition := PLSPosition new
-		line: lines size;
-		character: lines last size;
-		yourself.
-	formatter := (self isTonelDocument: textDocument)
-		ifFalse: [ PLSFormater new sourceCode: codeSource ]
-		ifTrue: [ PLSTonelFormater new sourceCode: codeSource ].
-	^ {(PLSTextEdit new
-		newText: formatter formated;
-		range:
-			(PLSRange new
-				start:
-					(PLSPosition new
-						line: 0;
-						character: 0;
-						yourself);
-				end: endPosition;
-				yourself))}
+		               line: lines size;
+		               character: lines last size;
+		               yourself.
+	formatter := (PLSDocument isTonelDocument: textDocument)
+		             ifFalse: [ PLSFormater new sourceCode: codeSource ]
+		             ifTrue: [ PLSTonelFormater new sourceCode: codeSource ].
+	^ { (PLSTextEdit new
+		   newText: formatter formated;
+		   range: (PLSRange new
+				    start: (PLSPosition new
+						     line: 0;
+						     character: 0;
+						     yourself);
+				    end: endPosition;
+				    yourself)) }
 ]
 
 { #category : 'pls - ice' }
 PLSServer >> iceAddPackageToRepository: aRepositoryName packageName: packageName [
 
 	<jrpc: #'pls-ice:addPackage'>
-	| normalizedPackage repository workingCopy package |
+	| normalizedPackage repository workingCopy |
 	normalizedPackage := packageName ifNil: [ '' ].
 	normalizedPackage := normalizedPackage trimBoth.
 	normalizedPackage ifEmpty: [ self error: 'Package name cannot be empty.' ].
@@ -417,15 +396,17 @@ PLSServer >> iceRepositoryCommit: aRepositoryName message: message [
 ]
 
 { #category : 'pls - ice' }
-PLSServer >> iceRepositoryContainingClassUri: classUri [ 
+PLSServer >> iceRepositoryContainingClassUri: classUri [
 
-	^ IceRepository registry detect: [ :repository | 
-		  [ 
-		  (repository isValid and: [ repository respondsTo: #name ]) and: [ 
-			  (self iceRepositoryChangesFor: repository name)
-				  anySatisfy: [ :change | (change at: #uri) = classUri ] ] ]
-			  on: Error
-			  do: [ false ] ] ifNone: [ nil ]
+	^ IceRepository registry
+		  detect: [ :repository |
+				  [
+					  repository isValid and: [
+							  (self iceRepositoryChangesFor: repository name) anySatisfy: [
+								  :change | (change at: #uri) = classUri ] ] ]
+					  on: Error
+					  do: [ false ] ]
+		  ifNone: [ nil ]
 ]
 
 { #category : 'pls - ice' }
@@ -508,22 +489,17 @@ PLSServer >> iceStatusForDiffLeaf: aDiffLeaf [
 
 	| className |
 	(aDiffLeaf respondsTo: #isAddition) ifTrue: [
-		aDiffLeaf isAddition ifTrue: [ ^ 'added' ] ]..
+		aDiffLeaf isAddition ifTrue: [ ^ 'added' ] ].
 	(aDiffLeaf respondsTo: #isRemoval) ifTrue: [
 		aDiffLeaf isRemoval ifTrue: [ ^ 'deleted' ] ].
 	(aDiffLeaf respondsTo: #isConflict) ifTrue: [
 		aDiffLeaf isConflict ifTrue: [ ^ 'conflicted' ] ].
 	className := aDiffLeaf class name asString asLowercase.
 	(className includesSubstring: 'add') ifTrue: [ ^ 'added' ].
-	((className includesSubstring: 'remove') or: [ className includesSubstring: 'delete' ])
-		ifTrue: [ ^ 'deleted' ].
+	((className includesSubstring: 'remove') or: [
+		 className includesSubstring: 'delete' ]) ifTrue: [ ^ 'deleted' ].
 	(className includesSubstring: 'conflict') ifTrue: [ ^ 'conflicted' ].
 	^ 'modified'
-]
-
-{ #category : 'lsp - formatting' }
-PLSServer >> isTonelDocument: textDocument [
-	^ ((textDocument at: #uri) endsWith: 'class.st') or: [ (textDocument at: #uri) endsWith: 'extension.st' ]
 ]
 
 { #category : 'lsp - initialization' }
@@ -765,6 +741,19 @@ PLSServer >> plsTestPackages [
 			   , '.class.st'"
 ]
 
+{ #category : 'lsp - text synchronisation' }
+PLSServer >> publishDiagnosticsFor: document [
+
+	self context clientContext capabilities textDocument ifNotNil: [ :td |
+			td diagnostic ifNil: [
+					self
+						sendData: (self convertJRPCJsonableObjectToJSON:
+								 ((JRPCNotificationObject method:
+									   'textDocument/publishDiagnostics') params:
+									  document diagnostics) asJRPCJSON)
+						toClient: clientOutStream ] ]
+]
+
 { #category : 'dap' }
 PLSServer >> startDapServer [
 	<jrpc: #'dap:startServer'>
@@ -784,12 +773,12 @@ PLSServer >> textDocumentCompletionWithContext: context position: position textD
 				                  text;
 		                  position: position;
 		                  yourself.
-	(self isTonelDocument: textDocument) ifTrue: [ 
-		completionTool sourceClass: (([ 
-			  PLSTonelParser parseString:
-				  (self context textItem: (textDocument at: #uri)) text ]
-				  on: Error
-				  do: [ ^ {  } ]) detect: #isClassDefinition) actualClass ].
+	(PLSDocument isTonelDocument: textDocument) ifTrue: [
+			completionTool sourceClass: (([
+					  PLSTonelParser parseString:
+						  (self context textItem: (textDocument at: #uri)) text ]
+					  on: Error
+					  do: [ ^ {  } ]) detect: #isClassDefinition) actualClass ].
 	completionList := PLSCompletionList new.
 	completionList completionItems: completionTool entries asArray.
 	^ completionList
