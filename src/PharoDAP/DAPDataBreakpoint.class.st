@@ -1,5 +1,5 @@
 Class {
-	#name : 'DAPDataBeakpoint',
+	#name : 'DAPDataBreakpoint',
 	#superclass : 'DAPJsonableObject',
 	#instVars : [
 		'dataId',
@@ -13,20 +13,20 @@ Class {
 }
 
 { #category : 'accessing' }
-DAPDataBeakpoint >> accessType [
+DAPDataBreakpoint >> accessType [
 
 	^ accessType
 ]
 
 { #category : 'accessing' }
-DAPDataBeakpoint >> accessType: aString [
+DAPDataBreakpoint >> accessType: aString [
 	
 	"aString := 'read' | 'write' | 'readWrite'"
 	accessType := aString
 ]
 
 { #category : 'converting' }
-DAPDataBeakpoint >> asDAPJSON [
+DAPDataBreakpoint >> asDAPJSON [
 
 	| dict |
 	dict := super asDAPJSON.
@@ -40,38 +40,38 @@ DAPDataBeakpoint >> asDAPJSON [
 ]
 
 { #category : 'accessing' }
-DAPDataBeakpoint >> condition [
+DAPDataBreakpoint >> condition [
 
 	^ condition
 ]
 
 { #category : 'accessing' }
-DAPDataBeakpoint >> condition: aString [
+DAPDataBreakpoint >> condition: aString [
 
 	condition := aString
 ]
 
 { #category : 'accessing' }
-DAPDataBeakpoint >> dataId [
+DAPDataBreakpoint >> dataId [
 
 	^ dataId
 ]
 
 { #category : 'accessing' }
-DAPDataBeakpoint >> dataId: aString [
+DAPDataBreakpoint >> dataId: aString [
 	"An id representing the data. This id is returned from the `dataBreakpointInfo` request."
 
 	dataId := aString
 ]
 
 { #category : 'accessing' }
-DAPDataBeakpoint >> hitCondition [
+DAPDataBreakpoint >> hitCondition [
 
 	^ hitCondition
 ]
 
 { #category : 'accessing' }
-DAPDataBeakpoint >> hitCondition: aString [
+DAPDataBreakpoint >> hitCondition: aString [
 
 	hitCondition := aString
 ]
